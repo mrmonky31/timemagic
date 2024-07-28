@@ -22,8 +22,8 @@ body {
     box-sizing: border-box;
     text-align: center;
     margin-top: -250px; /* Sposta il display più in alto di 250px */
-    margin-left: auto; /* Margine automatico a sinistra per centrare */
-    margin-right: auto; /* Margine automatico a destra per centrare */
+    margin-left: 0px; /* Margine automatico a sinistra per centrare */
+    margin-right: 500px; /* Margine automatico a destra per centrare */
 }
 
 .buttons {
@@ -71,3 +71,4 @@ button {
     padding: 5px 0;
     border-top: 1px solid #333;
 }
+
