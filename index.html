@@ -1,25 +1,57 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cronometro iPhone</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Cronometro">
-    <link rel="apple-touch-icon" href="icon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Cronometro</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div id="display">00:00,00</div>
-        <div class="buttons">
-            <button id="lapResetBtn">Giro</button>
-            <button id="startStopBtn">Avvia</button>
+
+<!-- Timer Display -->
+<div class="timer-display" id="timerDisplay">00:00,00</div>
+
+<!-- Center Dots -->
+<div class="center-dots">
+    <div class="dot left" id="dot1"></div>
+    <div class="dot right"></div>
+</div>
+
+<!-- Control Buttons -->
+<div class="controls">
+    <button class="control-btn left" id="leftBtn">Giro</button>
+    <button class="control-btn right" id="rightBtn">Avvia</button>
+</div>
+
+<!-- Invisible Zones for Icons -->
+<div class="nav-zones">
+    <div class="nav-zone" id="secretZone"></div>
+    <div class="nav-zone"></div>
+    <div class="nav-zone" id="slotZone"></div>
+    <div class="nav-zone"></div>
+</div>
+
+<!-- Secret Menu -->
+<div class="secret-menu" id="secretMenu">
+    <div class="menu-content">
+        <div class="menu-title">🎩 Menu Segreto</div>
+        <div class="menu-subtitle">Gestisci date di nascita</div>
+        
+        <div id="slotsContainer"></div>
+
+        <button class="add-slot-btn" id="addSlotBtn">+ Aggiungi Slot</button>
+
+        <div class="menu-buttons">
+            <button class="menu-btn cancel" id="cancelBtn">Annulla</button>
+            <button class="menu-btn save" id="saveBtn">Salva</button>
         </div>
-        <div id="laps"></div>
     </div>
-    <script src="script.js"></script>
+</div>
+
+<div class="home-indicator"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
