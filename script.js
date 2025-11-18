@@ -1,90 +1,341 @@
-let timer;
+// ===== STATE =====
 let isRunning = false;
-let startTime;
+let startTime = 0;
 let elapsedTime = 0;
-let laps = [];
-let lapCount = 0;
+let animationFrame;
+let tapCount = 0;
+let tapTimeout;
+let stopCount = 0;
+let targetDigits = [];
+let birthDates = [];
+let currentSlot = 0;
+let magicMode = false; // false = sum logic, true = birthday logic
+let leftBtnTapCount = 0;
+let leftBtnTapTimeout;
 let targetSum = 0;
 
-const display = document.getElementById('display');
-const startStopBtn = document.getElementById('startStopBtn');
-const lapResetBtn = document.getElementById('lapResetBtn');
-const lapsContainer = document.getElementById('laps');
+// ===== ELEMENTS =====
+const timerDisplay = document.getElementById('timerDisplay');
+const leftBtn = document.getElementById('leftBtn');
+const rightBtn = document.getElementById('rightBtn');
+const secretZone = document.getElementById('secretZone');
+const slotZone = document.getElementById('slotZone');
+const secretMenu = document.getElementById('secretMenu');
+const dot1 = document.getElementById('dot1');
+const slotsContainer = document.getElementById('slotsContainer');
+const addSlotBtn = document.getElementById('addSlotBtn');
+const saveBtn = document.getElementById('saveBtn');
+const cancelBtn = document.getElementById('cancelBtn');
 
-function formatTime(time) {
-    const minutes = Math.floor(time / 60000);
-    const seconds = Math.floor((time % 60000) / 1000);
-    const centiseconds = Math.floor((time % 1000) / 10);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')},${centiseconds.toString().padStart(2, '0')}`;
+// ===== TIMER FUNCTIONS =====
+function formatTime(ms) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const c = Math.floor((ms % 1000) / 10);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${String(c).padStart(2, '0')}`;
 }
 
-function updateDisplay() {
-    display.textContent = formatTime(elapsedTime);
+function formatTimeMagic(ms, pair) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')},${pair}`;
 }
 
-function startStop() {
+function updateTimer() {
     if (isRunning) {
-        clearInterval(timer);
-        isRunning = false;
-        startStopBtn.textContent = 'Avvia';
-        startStopBtn.classList.remove('stop');
-        lapResetBtn.textContent = 'Azzera';
-        checkSum();
-        console.log(`Timer fermato. Somma target attuale: ${targetSum}`);
-    } else {
-        startTime = Date.now() - elapsedTime;
-        timer = setInterval(() => {
-            elapsedTime = Date.now() - startTime;
-            updateDisplay();
-        }, 10);
+        elapsedTime = Date.now() - startTime;
+        timerDisplay.textContent = formatTime(elapsedTime);
+        animationFrame = requestAnimationFrame(updateTimer);
+    }
+}
+
+function toggleTimer() {
+    if (!isRunning) {
         isRunning = true;
-        startStopBtn.textContent = 'Stop';
-        startStopBtn.classList.add('stop');
-        lapResetBtn.textContent = 'Giro';
-    }
-}
-
-function lapReset() {
-    if (isRunning) {
-        const lapTime = elapsedTime;
-        laps.push(lapTime);
-        lapCount++;
-        const lapElement = document.createElement('div');
-        lapElement.classList.add('lap');
-        lapElement.innerHTML = `<span>Giro ${lapCount}</span><span>${formatTime(lapTime)}</span>`;
-        lapsContainer.insertBefore(lapElement, lapsContainer.firstChild);
+        startTime = Date.now() - elapsedTime;
+        rightBtn.textContent = 'Interrompi';
+        rightBtn.classList.add('running');
+        leftBtn.textContent = 'Giro';
+        leftBtn.classList.remove('active');
+        updateTimer();
     } else {
-        elapsedTime = 0;
-        laps = [];
-        lapCount = 0;
-        updateDisplay();
-        lapsContainer.innerHTML = '';
+        isRunning = false;
+        cancelAnimationFrame(animationFrame);
+        rightBtn.textContent = 'Avvia';
+        rightBtn.classList.remove('running');
+        leftBtn.textContent = 'Azzera';
+        leftBtn.classList.add('active');
+
+        // Choose logic based on magic mode
+        if (magicMode) {
+            // BIRTHDAY LOGIC - show target digits
+            if (stopCount < 3 && targetDigits.length > 0) {
+                timerDisplay.textContent = formatTimeMagic(elapsedTime, targetDigits[stopCount]);
+                stopCount++;
+            }
+        } else {
+            // SUM LOGIC - adjust time so digits sum to target
+            checkSum();
+        }
     }
 }
 
+function resetTimer() {
+    if (!isRunning) {
+        if (elapsedTime > 0) {
+            elapsedTime = 0;
+            stopCount = 0;
+            timerDisplay.textContent = '00:00,00';
+            leftBtn.textContent = 'Giro';
+            leftBtn.classList.remove('active');
+            prepareMagicDigits();
+        } else {
+            // Double-tap for magic toggle
+            leftBtnTapCount++;
+            clearTimeout(leftBtnTapTimeout);
+            
+            if (leftBtnTapCount === 2) {
+                toggleMagicMode();
+                leftBtnTapCount = 0;
+            } else {
+                leftBtnTapTimeout = setTimeout(() => {
+                    leftBtnTapCount = 0;
+                }, 600);
+            }
+        }
+    }
+}
+
+// ===== MAGIC FUNCTIONS =====
+function prepareMagicDigits() {
+    if (birthDates.length === 0 || currentSlot >= birthDates.length) return;
+    
+    const b = birthDates[currentSlot];
+    targetDigits = [
+        String(b.day).padStart(2, '0'),
+        String(b.month).padStart(2, '0'),
+        String(b.year).padStart(2, '0')
+    ];
+    stopCount = 0;
+}
+
+function flashDotNTimes(n) {
+    let count = 0;
+    function flash() {
+        if (count >= n) {
+            dot1.classList.add('left');
+            return;
+        }
+        dot1.classList.remove('left');
+        setTimeout(() => {
+            dot1.classList.add('left');
+            count++;
+            if (count < n) setTimeout(flash, 150);
+        }, 150);
+    }
+    flash();
+}
+
+function toggleMagicMode() {
+    magicMode = !magicMode;
+    flashDotNTimes(magicMode ? 1 : 2);
+    saveToStorage();
+}
+
+// ===== SUM LOGIC (when magic mode is OFF) =====
 function getRandomTargetSum() {
-    const values = [11, 14, 17, 20];
+    // Values: 5, 8, 11, 14, 17, 20, 23, 26, 29, 32
+    // Starting from 5, incrementing by 3
+    const values = [];
+    for (let i = 5; i <= 32; i += 3) {
+        values.push(i);
+    }
     return values[Math.floor(Math.random() * values.length)];
 }
 
 function checkSum() {
     targetSum = getRandomTargetSum();
-    console.log(`Nuovo valore target selezionato: ${targetSum}`);
-
+    
     const timeString = formatTime(elapsedTime);
-    const digits = timeString.replace(/[:.,]/g, '').split('').map(Number);
+    const digits = timeString.replace(/[,:]/g, '').split('').map(Number);
     const sum = digits.reduce((a, b) => a + b, 0);
     
     if (sum !== targetSum) {
         const difference = targetSum - sum;
         elapsedTime += difference * 10;
-        updateDisplay();
+        timerDisplay.textContent = formatTime(elapsedTime);
     }
-
-    console.log(`Somma corrente: ${sum}, Somma target: ${targetSum}`);
+    
+    console.log(`Sum logic: current=${sum}, target=${targetSum}, adjusted time`);
 }
 
-startStopBtn.addEventListener('click', startStop);
-lapResetBtn.addEventListener('click', lapReset);
+// ===== STORAGE =====
+function saveToStorage() {
+    localStorage.setItem('cronometroMagico', JSON.stringify({
+        birthDates,
+        currentSlot,
+        magicMode
+    }));
+}
 
-updateDisplay();
+function loadFromStorage() {
+    const saved = localStorage.getItem('cronometroMagico');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            if (data.birthDates && Array.isArray(data.birthDates)) {
+                birthDates = data.birthDates;
+            }
+            if (typeof data.currentSlot === 'number' && data.currentSlot >= 0) {
+                currentSlot = data.currentSlot;
+            }
+            if (typeof data.magicMode === 'boolean') {
+                magicMode = data.magicMode;
+            }
+            prepareMagicDigits();
+        } catch (e) {
+            console.error('Error loading:', e);
+        }
+    }
+}
+
+// ===== SLOTS MANAGEMENT =====
+function renderSlots() {
+    slotsContainer.innerHTML = '';
+    
+    birthDates.forEach((slot, index) => {
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'slot-section';
+        slotDiv.innerHTML = `
+            <div class="slot-header">
+                <span>Slot ${index + 1}</span>
+                ${birthDates.length > 1 ? `<button class="delete-slot" onclick="deleteSlot(${index})">Elimina</button>` : ''}
+            </div>
+            <input type="text" class="name-input" data-slot="${index}" data-field="name" 
+                   placeholder="Nome..." maxlength="20" value="${slot.name || ''}">
+            <div class="date-inputs">
+                <div class="date-group">
+                    <div class="date-label">GG</div>
+                    <input type="number" class="date-input" data-slot="${index}" data-field="day" 
+                           min="1" max="31" placeholder="15" value="${slot.day || ''}">
+                </div>
+                <div class="date-group">
+                    <div class="date-label">MM</div>
+                    <input type="number" class="date-input" data-slot="${index}" data-field="month" 
+                           min="1" max="12" placeholder="08" value="${slot.month || ''}">
+                </div>
+                <div class="date-group">
+                    <div class="date-label">AA</div>
+                    <input type="number" class="date-input" data-slot="${index}" data-field="year" 
+                           min="0" max="99" placeholder="95" value="${slot.year || ''}">
+                </div>
+            </div>
+        `;
+        slotsContainer.appendChild(slotDiv);
+    });
+
+    // Add input listeners
+    document.querySelectorAll('.date-input').forEach(input => {
+        input.addEventListener('input', e => {
+            if (e.target.value.length > 2) {
+                e.target.value = e.target.value.slice(0, 2);
+            }
+        });
+    });
+}
+
+function addSlot() {
+    birthDates.push({ day: '', month: '', year: '', name: '' });
+    renderSlots();
+}
+
+function deleteSlot(index) {
+    if (confirm(`Eliminare Slot ${index + 1}?`)) {
+        birthDates.splice(index, 1);
+        if (currentSlot >= birthDates.length) {
+            currentSlot = Math.max(0, birthDates.length - 1);
+        }
+        renderSlots();
+    }
+}
+
+// ===== SECRET ZONE (triple tap) =====
+secretZone.addEventListener('click', () => {
+    tapCount++;
+    clearTimeout(tapTimeout);
+    
+    if (tapCount === 3) {
+        renderSlots();
+        secretMenu.classList.add('show');
+        tapCount = 0;
+    } else {
+        tapTimeout = setTimeout(() => tapCount = 0, 1000);
+    }
+});
+
+// ===== SLOT SELECTION (cyclic tap) =====
+slotZone.addEventListener('click', () => {
+    if (birthDates.length === 0) return;
+    
+    currentSlot = (currentSlot + 1) % birthDates.length;
+    flashDotNTimes(currentSlot + 1);
+    prepareMagicDigits();
+    saveToStorage();
+});
+
+// ===== SAVE =====
+saveBtn.addEventListener('click', () => {
+    const inputs = document.querySelectorAll('[data-slot]');
+    const tempData = birthDates.map(slot => ({ ...slot }));
+    
+    inputs.forEach(input => {
+        const slotIndex = parseInt(input.dataset.slot);
+        const field = input.dataset.field;
+        
+        if (field === 'name') {
+            tempData[slotIndex].name = input.value.trim();
+        } else {
+            const val = parseInt(input.value);
+            if (!isNaN(val)) {
+                tempData[slotIndex][field] = val;
+            }
+        }
+    });
+
+    // Validate
+    for (let i = 0; i < tempData.length; i++) {
+        const d = tempData[i];
+        if (!d.day || !d.month || !d.year) {
+            alert(`Slot ${i + 1}: Compila tutti i campi`);
+            return;
+        }
+        if (d.day < 1 || d.day > 31 || d.month < 1 || d.month > 12 || d.year < 0 || d.year > 99) {
+            alert(`Slot ${i + 1}: Dati non validi`);
+            return;
+        }
+    }
+
+    birthDates = tempData;
+    prepareMagicDigits();
+    saveToStorage();
+    secretMenu.classList.remove('show');
+});
+
+// ===== CANCEL =====
+cancelBtn.addEventListener('click', () => {
+    secretMenu.classList.remove('show');
+});
+
+// ===== ADD SLOT =====
+addSlotBtn.addEventListener('click', addSlot);
+
+// ===== BUTTON EVENTS =====
+rightBtn.addEventListener('click', toggleTimer);
+leftBtn.addEventListener('click', resetTimer);
+
+// ===== INITIALIZE =====
+loadFromStorage();
+if (birthDates.length === 0) {
+    birthDates.push({ day: 15, month: 8, year: 95, name: '' });
+}
+prepareMagicDigits();
