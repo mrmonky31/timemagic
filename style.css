@@ -9,8 +9,8 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-   background: #000 url('bg.jpg') no-repeat center;
-background-position: center -30px;  /* <-- Cambia il valore per spostare su/giù */
+    background: #000 url('bg.jpg') no-repeat center top;
+    background-size: cover;
     color: #fff;
     overflow: hidden;
     height: 100vh;
@@ -43,7 +43,7 @@ background-position: center -30px;  /* <-- Cambia il valore per spostare su/giù
     top: 52%;  /* <-- SPOSTA QUI */
     transform: translate(-50%, -50%)scale(1.5);
     display: flex;
-    gap: 8px;  /* <-- DISTANZA tra puntini */
+    gap: 9px;  /* <-- DISTANZA tra puntini */
     pointer-events: none;
 }
 
