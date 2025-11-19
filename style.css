@@ -10,7 +10,7 @@
 body {
      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
    background: #000 url('bg.jpg') no-repeat center;
-background-position: center -30px;  /* <-- Cambia il valore per spostare su/giù */
+background-position: center -50px;  /* <-- Cambia il valore per spostare su/giù */
     color: #fff;
     overflow: hidden;
     height: 100vh;
