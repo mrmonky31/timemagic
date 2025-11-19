@@ -25,7 +25,7 @@ body {
 */
 .timer-display {
     position: absolute;
-    top: 23%;  /* <-- SPOSTA QUI */
+    top: 24%;  /* <-- SPOSTA QUI */
     left: 50%;
     transform: translate(-50%, -50%);
     font-size: 88px;  /* <-- DIMENSIONE */
@@ -88,26 +88,28 @@ body {
     align-items: center;
     justify-content: center;
     background: #1c1c1e;
+    border: none;
 }
 
 .control-btn.left {
-   
+   border: none;
     color: #8e8e93;
 }
 
 .control-btn.left.active {
     color: #fff;
+    border: none;
 }
 
 .control-btn.right {
     background: #1e3a1e;
-   
+   border: none;
     color: #30d158;
 }
 
 .control-btn.right.running {
     background: #3a1e1e;
-   
+   border: none;
     color: #ff453a;
 }
 
