@@ -44,7 +44,7 @@ body {
     top: 49%;  /* <-- SPOSTA QUI */
     transform: translate(-50%, -50%)scale(1.5);
     display: flex;
-    gap: 9px;  /* <-- DISTANZA tra puntini */
+    gap: 8px;  /* <-- DISTANZA tra puntini */
     pointer-events: none;
 }
 
@@ -68,7 +68,7 @@ body {
 */
 .controls {
     position: absolute;
-    bottom: 360px;  /* <-- ALTEZZA dal basso */
+    bottom: 363px;  /* <-- ALTEZZA dal basso */
     left: 0;
     right: 0;
     display: flex;
@@ -81,7 +81,7 @@ body {
     height: 85px;
     border-radius: 50%;
     border: 2px solid;
-    font-size: 17px;
+    font-size: 19px;
     font-weight: 400;
     cursor: pointer;
     display: flex;
