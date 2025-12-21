@@ -20,6 +20,7 @@ const leftBtn = document.getElementById('leftBtn');
 const rightBtn = document.getElementById('rightBtn');
 const secretZone = document.getElementById('secretZone');
 const slotZone = document.getElementById('slotZone');
+const timerZone = document.getElementById('timerZone');
 const secretMenu = document.getElementById('secretMenu');
 const dot1 = document.getElementById('dot1');
 const slotsContainer = document.getElementById('slotsContainer');
@@ -89,19 +90,6 @@ function resetTimer() {
             leftBtn.textContent = 'Giro';
             leftBtn.classList.remove('active');
             prepareMagicDigits();
-        } else {
-            // Double-tap for magic toggle
-            leftBtnTapCount++;
-            clearTimeout(leftBtnTapTimeout);
-            
-            if (leftBtnTapCount === 2) {
-                toggleMagicMode();
-                leftBtnTapCount = 0;
-            } else {
-                leftBtnTapTimeout = setTimeout(() => {
-                    leftBtnTapCount = 0;
-                }, 600);
-            }
         }
     }
 }
@@ -215,19 +203,19 @@ function renderSlots() {
                    placeholder="Nome..." maxlength="20" value="${slot.name || ''}">
             <div class="date-inputs">
                 <div class="date-group">
-                    <div class="date-label">GG</div>
+                    <div class="date-label">Cifra 1</div>
                     <input type="number" class="date-input" data-slot="${index}" data-field="day" 
-                           min="1" max="31" placeholder="15" value="${slot.day || ''}">
+                           placeholder="00" value="${slot.day || ''}">
                 </div>
                 <div class="date-group">
-                    <div class="date-label">MM</div>
+                    <div class="date-label">Cifra 2</div>
                     <input type="number" class="date-input" data-slot="${index}" data-field="month" 
-                           min="1" max="12" placeholder="08" value="${slot.month || ''}">
+                           placeholder="00" value="${slot.month || ''}">
                 </div>
                 <div class="date-group">
-                    <div class="date-label">AA</div>
+                    <div class="date-label">Cifra 3</div>
                     <input type="number" class="date-input" data-slot="${index}" data-field="year" 
-                           min="0" max="99" placeholder="95" value="${slot.year || ''}">
+                           placeholder="00" value="${slot.year || ''}">
                 </div>
             </div>
         `;
@@ -283,6 +271,11 @@ slotZone.addEventListener('click', () => {
     saveToStorage();
 });
 
+// ===== MAGIC MODE TOGGLE (Timer icon - single tap) =====
+timerZone.addEventListener('click', () => {
+    toggleMagicMode();
+});
+
 // ===== SAVE =====
 saveBtn.addEventListener('click', () => {
     const inputs = document.querySelectorAll('[data-slot]');
@@ -302,15 +295,16 @@ saveBtn.addEventListener('click', () => {
         }
     });
 
-    // Validate
+    // Validate - only check if fields are filled and are 2 digits
     for (let i = 0; i < tempData.length; i++) {
         const d = tempData[i];
-        if (!d.day || !d.month || !d.year) {
+        if (d.day === undefined || d.day === '' || d.month === undefined || d.month === '' || d.year === undefined || d.year === '') {
             alert(`Slot ${i + 1}: Compila tutti i campi`);
             return;
         }
-        if (d.day < 1 || d.day > 31 || d.month < 1 || d.month > 12 || d.year < 0 || d.year > 99) {
-            alert(`Slot ${i + 1}: Dati non validi`);
+        // Accept any number 0-99
+        if (d.day < 0 || d.day > 99 || d.month < 0 || d.month > 99 || d.year < 0 || d.year > 99) {
+            alert(`Slot ${i + 1}: Usa numeri da 00 a 99`);
             return;
         }
     }
