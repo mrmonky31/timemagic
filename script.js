@@ -118,8 +118,8 @@ function flashDotNTimes(n) {
         setTimeout(() => {
             dot1.classList.add('left');
             count++;
-            if (count < n) setTimeout(flash, 150);
-        }, 150);
+            if (count < n) setTimeout(flash, 100);
+        }, 100);
     }
     flash();
 }
